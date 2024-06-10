@@ -117,6 +117,8 @@ namespace Avalonia.Controls.Primitives
         /// element realization can start. Failing that it estimates the first element in the
         /// viewport.
         /// </remarks>
+        private double casсhedU = 0;
+        private int casсhedI = 0;
         public (int index, double position) GetOrEstimateAnchorElementForViewport(
             double viewportStartU,
             double viewportEndU,
@@ -145,7 +147,11 @@ namespace Avalonia.Controls.Primitives
                     var endU = u + size;
 
                     if (endU > viewportStartU && u < viewportEndU)
+                    {
+                        casсhedU = u;
+                        casсhedI = FirstIndex + i;
                         return (FirstIndex + i, u);
+                    }
 
                     u = endU;
                 }
@@ -166,7 +172,7 @@ namespace Avalonia.Controls.Primitives
 
             // Estimate the element at the start of the viewport.
             var index = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
-            return (index, index * estimatedSize);
+            return (casсhedI, casсhedU);
         }
 
         /// <summary>
