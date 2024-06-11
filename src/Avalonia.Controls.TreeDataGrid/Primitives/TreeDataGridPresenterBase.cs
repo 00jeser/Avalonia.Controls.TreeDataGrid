@@ -8,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;

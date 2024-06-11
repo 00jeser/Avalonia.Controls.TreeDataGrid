@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Xml.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -99,6 +101,11 @@ namespace Avalonia.Controls.Primitives
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                     row.UpdateSelection(selection);
             }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
         }
 
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
