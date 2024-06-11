@@ -333,6 +333,8 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
             ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
+            if (RowsPresenter != null)
+                RowsPresenter.treeDataGrid = this;
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _headerScroll = e.NameScope.Find<ScrollViewer>("PART_HeaderScrollViewer");
 
@@ -714,7 +716,6 @@ namespace Avalonia.Controls
             if (Scroll is not null && _headerScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
                 _headerScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
 
-            RowsPresenter?.UpdateSelection(SelectionInteraction);
         }
 
         private void OnHeaderScrollChanged(object? sender, ScrollChangedEventArgs e)

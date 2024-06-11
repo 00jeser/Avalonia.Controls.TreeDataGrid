@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Xml.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
