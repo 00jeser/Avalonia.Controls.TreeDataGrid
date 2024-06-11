@@ -1,6 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
+using Bogus;
 using ReactiveUI;
 using TreeDataGridDemo.Models;
 
@@ -36,8 +40,18 @@ namespace TreeDataGridDemo.ViewModels
 
             source.RowSelection!.SingleSelect = false;
             Source = source;
+            CopyCommand = ReactiveCommand.Create(() =>
+            {
+                var r = Source.Selection as TreeDataGridRowSelectionModel<DragDropItem>;
+                var r2 = r?.SelectedItem;
+                _data.Insert(r?.SelectedIndex[0]??0, r2!);
+            }
+            );
         }
 
         public ITreeDataGridSource<DragDropItem> Source { get; }
+
+
+        public ICommand CopyCommand { get; set; }
     }
 }

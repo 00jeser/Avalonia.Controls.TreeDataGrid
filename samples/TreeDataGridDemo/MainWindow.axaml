@@ -137,5 +137,17 @@
                       RowDragOver="DragDrop_RowDragOver"/>
       </DockPanel>
     </TabItem>
+    <TabItem Header="Copy/Paste">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="dragDrop2"
+                      Source="{Binding DragDrop.Source}"
+                      >
+          <TreeDataGrid.KeyBindings>
+            <KeyBinding Gesture="Ctrl+C" Command="{Binding DragDrop.CopyCommand}"/>
+          </TreeDataGrid.KeyBindings>
+        </TreeDataGrid>
+      </DockPanel>
+    </TabItem>
   </TabControl>
 </Window>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -172,6 +174,10 @@ namespace Avalonia.Controls
                     {
                         _source.PropertyChanged -= OnSourcePropertyChanged;
                         _source.Sorted -= OnSourceSorted;
+                        if (_source is INotifyCollectionChanged _sourceOC)
+                        {
+                            _sourceOC.CollectionChanged += _source_CollectionChanged;
+                        }
                     }
 
                     var oldSource = _source;
@@ -192,6 +198,11 @@ namespace Avalonia.Controls
                         _source);
                 }
             }
+        }
+
+        private void _source_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RowsPresenter?.UpdateSelection(SelectionInteraction);
         }
 
         internal ITreeDataGridSelectionInteraction? SelectionInteraction
@@ -322,6 +333,8 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
             ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
+            if (RowsPresenter != null)
+                RowsPresenter.treeDataGrid = this;
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _headerScroll = e.NameScope.Find<ScrollViewer>("PART_HeaderScrollViewer");
 
@@ -702,6 +715,7 @@ namespace Avalonia.Controls
         {
             if (Scroll is not null && _headerScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
                 _headerScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
+
         }
 
         private void OnHeaderScrollChanged(object? sender, ScrollChangedEventArgs e)

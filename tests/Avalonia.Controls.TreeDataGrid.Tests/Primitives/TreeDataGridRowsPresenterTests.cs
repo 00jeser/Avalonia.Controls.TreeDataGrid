@@ -486,7 +486,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             IColumns? columns = null, 
             List<IStyle>? additionalStyles = null,
             int itemCount = 100,
-            Size? rootSize = null)
+            Size? rootSize = null,
+            TreeDataGrid? treeDataGrid = null)
         {
             var items = new AvaloniaList<Model>(Enumerable.Range(0, itemCount).Select(x =>
                 new Model
@@ -503,6 +504,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 ElementFactory = new TreeDataGridElementFactory(),
                 Items = rows,
                 Columns = columns,
+                treeDataGrid = treeDataGrid
             };
 
             var scrollViewer = new ScrollViewer

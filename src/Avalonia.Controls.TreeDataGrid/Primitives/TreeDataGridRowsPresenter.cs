@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Xml.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -25,6 +27,8 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
+        public TreeDataGrid? treeDataGrid;
+
         protected override Orientation Orientation => Orientation.Vertical;
 
         protected override (int index, double position) GetElementAt(double position)
@@ -37,6 +41,14 @@ namespace Avalonia.Controls.Primitives
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, GetSelection(), Columns, (IRows?)Items, index);
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var res = base.MeasureOverride(availableSize);
+            if (treeDataGrid != null)
+                UpdateSelection(treeDataGrid.SelectionInteraction);
+            return res;
         }
 
         protected override void UpdateElementIndex(Control element, int oldIndex, int newIndex)
@@ -99,6 +111,11 @@ namespace Avalonia.Controls.Primitives
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                     row.UpdateSelection(selection);
             }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
         }
 
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
