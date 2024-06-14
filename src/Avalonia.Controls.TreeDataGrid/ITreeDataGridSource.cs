@@ -21,6 +21,7 @@ namespace Avalonia.Controls
         /// Gets the rows to be displayed.
         /// </summary>
         IRows Rows { get; }
+        IRows AddRow { get; }
 
         /// <summary>
         /// Gets the selection model.

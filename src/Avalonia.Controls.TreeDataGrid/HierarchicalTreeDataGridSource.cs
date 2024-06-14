@@ -20,12 +20,13 @@ namespace Avalonia.Controls
         ITreeDataGridSource<TModel>,
         IDisposable,
         IExpanderRowController<TModel>
-        where TModel: class
+        where TModel : class, new()
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
+        private HierarchicalRows<TModel>? _addRow;
         private Comparison<TModel>? _comparison;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
@@ -43,7 +44,7 @@ namespace Avalonia.Controls
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
 
-        public IEnumerable<TModel> Items 
+        public IEnumerable<TModel> Items
         {
             get => _items;
             set
@@ -60,6 +61,7 @@ namespace Avalonia.Controls
         }
 
         public IRows Rows => GetOrCreateRows();
+        public IRows AddRow => GetNewItemIRows();
         public ColumnList<TModel> Columns { get; }
 
         public ITreeDataGridSelection? Selection
@@ -101,6 +103,7 @@ namespace Avalonia.Controls
         public void Dispose()
         {
             _rows?.Dispose();
+            _addRow?.Dispose();
             GC.SuppressFinalize(this);
         }
 
@@ -275,7 +278,7 @@ namespace Avalonia.Controls
 
                     if (items == targetItems && i < ti)
                         --ti;
-                    
+
                     items.RemoveAt(i);
                 }
             }
@@ -361,6 +364,20 @@ namespace Avalonia.Controls
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public HierarchicalRows<TModel> GetNewItemIRows()
+        {
+            if (_addRow is null)
+            {
+                if (Columns.Count == 0)
+                    throw new InvalidOperationException("No columns defined.");
+                if (_expanderColumn is null)
+                    throw new InvalidOperationException("No expander column defined.");
+                _addRow = new HierarchicalRows<TModel>(this, TreeDataGridItemsSourceView<TModel>.GetOrCreate(new List<TModel>() { new TModel() }), _expanderColumn, _comparison);
+            }
+
+            return _addRow;
         }
     }
 }

@@ -1,0 +1,142 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
+using Avalonia.Layout;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
+
+namespace Avalonia.Controls.Primitives
+{
+    public class TreeDataGridAddRowPresentor : TreeDataGridPresenterBase<IRow>
+    {
+        public static readonly DirectProperty<TreeDataGridAddRowPresentor, IColumns?> ColumnsProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridAddRowPresentor, IColumns?>(
+                nameof(Columns),
+                o => o.Columns,
+                (o, v) => o.Columns = v);
+
+        private IColumns? _columns;
+
+        public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
+
+        public IColumns? Columns
+        {
+            get => _columns;
+            set => SetAndRaise(ColumnsProperty, ref _columns, value);
+        }
+
+        public TreeDataGrid? treeDataGrid;
+
+        protected override Orientation Orientation => Orientation.Vertical;
+
+        protected override (int index, double position) GetElementAt(double position)
+        {
+            return ((IRows)Items!).GetRowAt(position);
+        }
+
+        protected override void RealizeElement(Control element, IRow rowModel, int index)
+        {
+            var row = (TreeDataGridRow)element;
+            row.Realize(ElementFactory, GetSelection(), Columns, (IRows?)Items, index);
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var res = base.MeasureOverride(availableSize);
+            if (treeDataGrid != null)
+                UpdateSelection(treeDataGrid.SelectionInteraction);
+            return res;
+        }
+
+        protected override void UpdateElementIndex(Control element, int oldIndex, int newIndex)
+        {
+            ((TreeDataGridRow)element).UpdateIndex(newIndex);
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, newIndex));
+        }
+
+        protected override void UnrealizeElement(Control element)
+        {
+            ((TreeDataGridRow)element).Unrealize();
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
+        }
+
+        protected override void UnrealizeElementOnItemRemoved(Control element)
+        {
+            ((TreeDataGridRow)element).UnrealizeOnItemRemoved();
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            Columns?.CommitActualWidths();
+            return base.ArrangeOverride(finalSize);
+        }
+
+        protected override void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
+        {
+            base.OnEffectiveViewportChanged(sender, e);
+            Columns?.ViewportChanged(Viewport);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.Property == ColumnsProperty)
+            {
+                var oldValue = change.GetOldValue<IColumns>();
+                var newValue = change.GetNewValue<IColumns>();
+
+                if (oldValue is object)
+                    oldValue.LayoutInvalidated -= OnColumnLayoutInvalidated;
+                if (newValue is object)
+                    newValue.LayoutInvalidated += OnColumnLayoutInvalidated;
+
+                // When for existing Presenter Columns would be recreated they won't get Viewport set so we need to track that
+                // and pass Viewport for a newly created object. 
+                if (oldValue != null && newValue != null)
+                {
+                    newValue.ViewportChanged(Viewport);
+                }
+            }
+
+            base.OnPropertyChanged(change);
+        }
+
+        internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
+        {
+            foreach (var element in RealizedElements)
+            {
+                if (element is TreeDataGridRow { RowIndex: >= 0 } row)
+                    row.UpdateSelection(selection);
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            this.PointerPressed += (o, e) =>
+            e.Handled = true;
+        }
+
+        private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
+        {
+            InvalidateMeasure();
+
+            foreach (var element in RealizedElements)
+            {
+                if (element is TreeDataGridRow row)
+                    row.CellsPresenter?.InvalidateMeasure();
+            }
+        }
+
+        private ITreeDataGridSelectionInteraction? GetSelection()
+        {
+            return treeDataGrid?.SelectionInteraction;
+        }
+
+    }
+}

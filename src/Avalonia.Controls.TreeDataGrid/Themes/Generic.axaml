@@ -40,9 +40,9 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}">
-              <DockPanel>
+              <Grid RowDefinitions="Auto * Auto">
                 <ScrollViewer Name="PART_HeaderScrollViewer"
-                              DockPanel.Dock="Top"
+                              Grid.Row="0"
                               IsVisible="{TemplateBinding ShowColumnHeaders}"
                               HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Disabled"
@@ -53,21 +53,39 @@
                                                         Items="{TemplateBinding Columns}" />
                   </Border>
                 </ScrollViewer>
-                <ScrollViewer Name="PART_ScrollViewer"
+                <ScrollViewer Name="PART_AddRowScrollViewer"
+                              Grid.Row="2"
                               HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled"
+                              IsVisible="{TemplateBinding IsUserCanAddRows}"
+                              BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+                  <Border x:Name="AddRowPresenterBorder">
+                    <TreeDataGridAddRowPresentor Name="PART_AddRowPresenter"
+                                             Columns="{TemplateBinding Columns}"
+                                             ElementFactory="{TemplateBinding ElementFactory}"
+                                             Items="{TemplateBinding AddRow}"/>
+                  </Border>
+                </ScrollViewer>
+                <ScrollViewer Name="PART_ScrollViewer"
+                              Grid.Row="1"
+                              HorizontalScrollBarVisibility="Hidden"
                               BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
                   <TreeDataGridRowsPresenter Name="PART_RowsPresenter"
                                              Columns="{TemplateBinding Columns}"
                                              ElementFactory="{TemplateBinding ElementFactory}"
                                              Items="{TemplateBinding Rows}" />
                 </ScrollViewer>
-              </DockPanel>
+              </Grid>
             </Border>
           </ControlTemplate>
         </Setter>
 
         <Style Selector="^/template/ Border#ColumnHeadersPresenterBorder">
           <Setter Property="BorderThickness" Value="0 0 0 1" />
+          <Setter Property="BorderBrush" Value="{DynamicResource TreeDataGridGridLinesBrush}" />
+        </Style>
+        <Style Selector="^/template/ Border#AddRowPresenterBorder">
+          <Setter Property="BorderThickness" Value="0 1 0 0" />
           <Setter Property="BorderBrush" Value="{DynamicResource TreeDataGridGridLinesBrush}" />
         </Style>
 

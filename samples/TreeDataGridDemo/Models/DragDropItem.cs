@@ -13,6 +13,7 @@ namespace TreeDataGridDemo.Models
         private bool _allowDrop = true;
 
         public DragDropItem(string name) => Name = name;
+        public DragDropItem() => Name = "name";
         public string Name { get; }
 
         public bool AllowDrag

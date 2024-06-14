@@ -37,5 +37,20 @@
             BirthRate = birth;
             DeathRate = death;
         }
+        public Country()
+        {
+            Name = "";
+            Region = "region";
+            Population = 0;
+            Area = 0;
+            PopulationDensity = 0;
+            CoastLine = 0;
+            NetMigration = 0;
+            InfantMortality = 0;
+            GDP = 0;
+            LiteracyPercent = 0;
+            BirthRate = 0;
+            DeathRate = 0;
+        }
     }
 }

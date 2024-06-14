@@ -38,6 +38,15 @@ namespace TreeDataGridDemo.Models
                 Modified = info.LastWriteTimeUtc;
             }
         }
+        public FileTreeNodeModel()
+        {
+            _path = "";
+            _name = "";
+            _isExpanded = false;
+            IsDirectory = false;
+            HasChildren = false;
+
+        }
 
         public string Path 
         {

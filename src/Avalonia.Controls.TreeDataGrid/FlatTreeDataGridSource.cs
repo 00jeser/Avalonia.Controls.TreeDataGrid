@@ -16,11 +16,12 @@ namespace Avalonia.Controls
     public class FlatTreeDataGridSource<TModel> : NotifyingBase,
         ITreeDataGridSource<TModel>,
         IDisposable
-            where TModel: class
+            where TModel: class, new()
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
+        private AnonymousSortableRows<TModel>? _addRow;
         private IComparer<TModel>? _comparer;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
@@ -34,6 +35,7 @@ namespace Avalonia.Controls
 
         public ColumnList<TModel> Columns { get; }
         public IRows Rows => _rows ??= CreateRows();
+        public IRows AddRow => _addRow ??= CreateAddRow();
         IColumns ITreeDataGridSource.Columns => Columns;
 
         public IEnumerable<TModel> Items
@@ -167,5 +169,11 @@ namespace Avalonia.Controls
         {
             return new AnonymousSortableRows<TModel>(_itemsView, _comparer);
         }
+        private AnonymousSortableRows<TModel> CreateAddRow()
+        {
+            var _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(new List<TModel>() { new TModel() });
+            return new AnonymousSortableRows<TModel>(_itemsView, _comparer);
+        }
+        
     }
 }

@@ -45,6 +45,12 @@ namespace Avalonia.Controls
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
+        public static readonly DirectProperty<TreeDataGrid, IRows?> AddRowProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, IRows?>(
+                nameof(AddRow),
+                o => o.AddRow,
+                (o, v) => o.AddRow = v);
+
         public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
                 nameof(Scroll),
@@ -52,6 +58,9 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
+
+        public static readonly StyledProperty<bool> IsUserCanAddRowsProperty =
+            AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(IsUserCanAddRows), true);
 
         public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSource?> SourceProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSource?>(
@@ -80,8 +89,10 @@ namespace Avalonia.Controls
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
+        private IRows? _addRow;
         private IScrollable? _scroll;
         private IScrollable? _headerScroll;
+        private IScrollable? _addRowScroll;
         private ITreeDataGridSelectionInteraction? _selection;
         private Control? _userSortColumn;
         private ListSortDirection _userSortDirection;
@@ -144,8 +155,14 @@ namespace Avalonia.Controls
             get => _rows;
             private set => SetAndRaise(RowsProperty, ref _rows, value);
         }
+        public IRows? AddRow
+        {
+            get => _addRow;
+            private set => SetAndRaise(AddRowProperty, ref _addRow, value);
+        }
 
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
+        public TreeDataGridAddRowPresentor? AddRowPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
 
         public IScrollable? Scroll
@@ -158,6 +175,11 @@ namespace Avalonia.Controls
         {
             get => GetValue(ShowColumnHeadersProperty);
             set => SetValue(ShowColumnHeadersProperty, value);
+        }
+        public bool IsUserCanAddRows
+        {
+            get => GetValue(IsUserCanAddRowsProperty);
+            set => SetValue(IsUserCanAddRowsProperty, value);
         }
 
         public ITreeDataGridCellSelectionModel? ColumnSelection => Source?.Selection as ITreeDataGridCellSelectionModel;
@@ -197,6 +219,7 @@ namespace Avalonia.Controls
                         oldSource,
                         _source);
                 }
+                AddRow = _source?.AddRow;
             }
         }
 
@@ -324,24 +347,28 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if (Scroll is ScrollViewer s && _headerScroll is ScrollViewer h)
+            if (Scroll is ScrollViewer s && _headerScroll is ScrollViewer h && _addRowScroll is ScrollViewer a)
             {
                 s.ScrollChanged -= OnScrollChanged;
                 h.ScrollChanged -= OnHeaderScrollChanged;
+                a.ScrollChanged += OnAddRowScrollChanged;
             }
 
             base.OnApplyTemplate(e);
             ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
+            AddRowPresenter = e.NameScope.Find<TreeDataGridAddRowPresentor>("PART_AddRowPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
             if (RowsPresenter != null)
                 RowsPresenter.treeDataGrid = this;
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _headerScroll = e.NameScope.Find<ScrollViewer>("PART_HeaderScrollViewer");
+            _addRowScroll = e.NameScope.Find<ScrollViewer>("PART_AddRowScrollViewer");
 
-            if (Scroll is ScrollViewer s1 && _headerScroll is ScrollViewer h1)
+            if (Scroll is ScrollViewer s1 && _headerScroll is ScrollViewer h1 && _addRowScroll is ScrollViewer a1)
             {
                 s1.ScrollChanged += OnScrollChanged;
                 h1.ScrollChanged += OnHeaderScrollChanged;
+                a1.ScrollChanged += OnAddRowScrollChanged;
             }
         }
 
@@ -713,15 +740,28 @@ namespace Avalonia.Controls
 
         private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
-            if (Scroll is not null && _headerScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+            if (Scroll is not null && _headerScroll is not null && _addRowScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+            {
                 _headerScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
-
+                _addRowScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
+            }
         }
 
         private void OnHeaderScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
-            if (Scroll is not null && _headerScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+            if (Scroll is not null && _headerScroll is not null && _addRowScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+            {
                 Scroll.Offset = Scroll.Offset.WithX(_headerScroll.Offset.X);
+                _addRowScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
+            }
+        }
+        private void OnAddRowScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            if (Scroll is not null && _headerScroll is not null && _addRowScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+            {
+                Scroll.Offset = Scroll.Offset.WithX(_addRowScroll.Offset.X);
+                _headerScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
+            }
         }
 
         private void OnAutoScrollTick(object? sender, EventArgs e)
