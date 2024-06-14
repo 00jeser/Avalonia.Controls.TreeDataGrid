@@ -20,16 +20,19 @@ namespace Avalonia.Controls
         ITreeDataGridSource<TModel>,
         IDisposable,
         IExpanderRowController<TModel>
-        where TModel : class, new()
+        where TModel : class
     {
         private IEnumerable<TModel> _items;
+        private IEnumerable<TModel> _addRowItems;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
-        private HierarchicalRows<TModel>? _addRow;
+        private HierarchicalRows<TModel>? _addRowRows;
+        private TModel? _addRow;
         private Comparison<TModel>? _comparison;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
+        private bool _hasNewItem = false;
 
         public HierarchicalTreeDataGridSource(TModel item)
             : this(new[] { item })
@@ -39,6 +42,7 @@ namespace Avalonia.Controls
         public HierarchicalTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
+            _addRowItems = new List<TModel>();
             _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
@@ -60,8 +64,49 @@ namespace Avalonia.Controls
             }
         }
 
+        public IEnumerable<TModel> AddRowItems
+        {
+            get => _addRowItems;
+            set
+            {
+                if (_addRowItems != value)
+                {
+                    _addRowItems = value;
+                    _addRowItems = TreeDataGridItemsSourceView<TModel>.GetOrCreate(value);
+                }
+            }
+        }
+
         public IRows Rows => GetOrCreateRows();
-        public IRows AddRow => GetNewItemIRows();
+        public IRows? AddRowRows => GetOrCreateAddRows();
+        public TModel? AddRow
+        {
+            get => _addRow;
+            set
+            {
+                if (_addRow != value)
+                {
+                    _addRow = value;
+                    if (value != null)
+                    {
+                        AddRowItems = new List<TModel>() { value };
+                        _hasNewItem = false;
+                    }
+                    else
+                    {
+                        AddRowItems = new List<TModel>() {  };
+                        _hasNewItem = true;
+                    }
+                }
+            }
+        }
+
+        public bool HasNewItem
+        {
+            get { return _hasNewItem; }
+            set { RaiseAndSetIfChanged(ref _hasNewItem, value); }
+        }
+
         public ColumnList<TModel> Columns { get; }
 
         public ITreeDataGridSelection? Selection
@@ -94,6 +139,8 @@ namespace Avalonia.Controls
 
         IColumns ITreeDataGridSource.Columns => Columns;
 
+        IEnumerable<object> ITreeDataGridSource.AddRowItems => throw new NotImplementedException();
+
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanding;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
@@ -103,7 +150,6 @@ namespace Avalonia.Controls
         public void Dispose()
         {
             _rows?.Dispose();
-            _addRow?.Dispose();
             GC.SuppressFinalize(this);
         }
 
@@ -344,6 +390,13 @@ namespace Avalonia.Controls
             return _rows;
         }
 
+        private HierarchicalRows<TModel>? GetOrCreateAddRows()
+        {
+            if (_addRowRows is null && _expanderColumn is not null)
+                _addRowRows = new HierarchicalRows<TModel>(this, TreeDataGridItemsSourceView<TModel>.GetOrCreate(AddRowItems), _expanderColumn, _comparison);
+            return _addRowRows;
+        }
+
         private void OnColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
@@ -366,18 +419,5 @@ namespace Avalonia.Controls
             }
         }
 
-        public HierarchicalRows<TModel> GetNewItemIRows()
-        {
-            if (_addRow is null)
-            {
-                if (Columns.Count == 0)
-                    throw new InvalidOperationException("No columns defined.");
-                if (_expanderColumn is null)
-                    throw new InvalidOperationException("No expander column defined.");
-                _addRow = new HierarchicalRows<TModel>(this, TreeDataGridItemsSourceView<TModel>.GetOrCreate(new List<TModel>() { new TModel() }), _expanderColumn, _comparison);
-            }
-
-            return _addRow;
-        }
     }
 }

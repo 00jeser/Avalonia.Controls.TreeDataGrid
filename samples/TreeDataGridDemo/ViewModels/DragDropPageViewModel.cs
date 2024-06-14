@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -35,7 +36,8 @@ namespace TreeDataGridDemo.ViewModels
                         "Allow Drop",
                         x => x.AllowDrop,
                         (o, x) => o.AllowDrop = x),
-                }
+                },
+                AddRow = new DragDropItem()
             };
 
             source.RowSelection!.SingleSelect = false;

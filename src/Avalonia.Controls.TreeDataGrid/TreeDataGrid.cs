@@ -44,12 +44,12 @@ namespace Avalonia.Controls
                 nameof(Rows),
                 o => o.Rows,
                 (o, v) => o.Rows = v);
-
-        public static readonly DirectProperty<TreeDataGrid, IRows?> AddRowProperty =
+        
+        public static readonly DirectProperty<TreeDataGrid, IRows?> AddRowItemsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IRows?>(
-                nameof(AddRow),
-                o => o.AddRow,
-                (o, v) => o.AddRow = v);
+                nameof(AddRowItems),
+                o => o.AddRowItems,
+                (o, v) => o.AddRowItems = v);
 
         public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
@@ -58,9 +58,6 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
-
-        public static readonly StyledProperty<bool> IsUserCanAddRowsProperty =
-            AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(IsUserCanAddRows), true);
 
         public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSource?> SourceProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSource?>(
@@ -89,7 +86,7 @@ namespace Avalonia.Controls
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
-        private IRows? _addRow;
+        private IRows? _addRowItems;
         private IScrollable? _scroll;
         private IScrollable? _headerScroll;
         private IScrollable? _addRowScroll;
@@ -155,10 +152,10 @@ namespace Avalonia.Controls
             get => _rows;
             private set => SetAndRaise(RowsProperty, ref _rows, value);
         }
-        public IRows? AddRow
+        public IRows? AddRowItems
         {
-            get => _addRow;
-            private set => SetAndRaise(AddRowProperty, ref _addRow, value);
+            get => _addRowItems;
+            private set => SetAndRaise(AddRowItemsProperty, ref _addRowItems, value);
         }
 
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
@@ -175,11 +172,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(ShowColumnHeadersProperty);
             set => SetValue(ShowColumnHeadersProperty, value);
-        }
-        public bool IsUserCanAddRows
-        {
-            get => GetValue(IsUserCanAddRowsProperty);
-            set => SetValue(IsUserCanAddRowsProperty, value);
         }
 
         public ITreeDataGridCellSelectionModel? ColumnSelection => Source?.Selection as ITreeDataGridCellSelectionModel;
@@ -206,6 +198,7 @@ namespace Avalonia.Controls
                     _source = value;
                     Columns = _source?.Columns;
                     Rows = _source?.Rows;
+                    AddRowItems = _source?.AddRowRows;
                     SelectionInteraction = _source?.Selection as ITreeDataGridSelectionInteraction;
 
                     if (_source != null)
@@ -219,7 +212,6 @@ namespace Avalonia.Controls
                         oldSource,
                         _source);
                 }
-                AddRow = _source?.AddRow;
             }
         }
 

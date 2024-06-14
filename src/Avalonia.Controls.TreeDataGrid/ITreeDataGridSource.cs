@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         /// Gets the rows to be displayed.
         /// </summary>
         IRows Rows { get; }
-        IRows AddRow { get; }
+        IRows? AddRowRows { get; }
 
         /// <summary>
         /// Gets the selection model.
@@ -62,6 +62,7 @@ namespace Avalonia.Controls
         /// Gets the items in the data source.
         /// </summary>
         IEnumerable<object> Items { get; }
+        IEnumerable<object> AddRowItems { get; }
 
         /// <summary>
         /// Gets the children of a model, if any.
@@ -88,5 +89,7 @@ namespace Avalonia.Controls
         /// Gets the items in the data source.
         /// </summary>
         new IEnumerable<TModel> Items { get; }
+        new IEnumerable<TModel> AddRowItems { get; }
+        TModel? AddRow { get; }
     }
 }

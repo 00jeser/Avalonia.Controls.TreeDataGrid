@@ -19,25 +19,66 @@ namespace Avalonia.Controls
             where TModel: class, new()
     {
         private IEnumerable<TModel> _items;
+        private IEnumerable<TModel> _addRowItems;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
-        private AnonymousSortableRows<TModel>? _addRow;
+        //private AnonymousSortableRows<TModel>? _addRow;
         private IComparer<TModel>? _comparer;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
+        private bool _hasNewItem = false;
+        private TModel? _addRow;
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
+            _addRowItems = new List<TModel>();
             _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
         }
 
         public ColumnList<TModel> Columns { get; }
         public IRows Rows => _rows ??= CreateRows();
-        public IRows AddRow => _addRow ??= CreateAddRow();
+        public TModel? AddRow
+        {
+            get => _addRow;
+            set
+            {
+                if (_addRow != value)
+                {
+                    _addRow = value;
+                    if (value != null)
+                    {
+                        AddRowItems = new List<TModel>() { value };
+                        _hasNewItem = false;
+                    }
+                    else
+                    {
+                        AddRowItems = new List<TModel>() { };
+                        _hasNewItem = true;
+                    }
+                }
+            }
+        }
+        public bool HasNewItem
+        {
+            get { return _hasNewItem; }
+            set { RaiseAndSetIfChanged(ref _hasNewItem, value); }
+        }
         IColumns ITreeDataGridSource.Columns => Columns;
 
+        public IEnumerable<TModel> AddRowItems
+        {
+            get => _addRowItems;
+            set
+            {
+                if (_addRowItems != value)
+                {
+                    _addRowItems = value;
+                    _addRowItems = TreeDataGridItemsSourceView<TModel>.GetOrCreate(value);
+                }
+            }
+        }
         public IEnumerable<TModel> Items
         {
             get => _items;
@@ -82,6 +123,10 @@ namespace Avalonia.Controls
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
         public bool IsHierarchical => false;
         public bool IsSorted => _comparer is not null;
+
+        IEnumerable<object> ITreeDataGridSource.AddRowItems => throw new NotImplementedException();
+
+        public IRows? AddRowRows => null;
 
         public event Action? Sorted;
 

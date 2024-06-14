@@ -24,6 +24,7 @@ namespace TreeDataGridDemo.ViewModels
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
         private string? _selectedPath;
+        public FileTreeNodeModel? newItem { get; set; }
 
         public FilesPageViewModel()
         {
@@ -37,6 +38,8 @@ namespace TreeDataGridDemo.ViewModels
             {
                 _selectedDrive = Drives.FirstOrDefault() ?? "/";
             }
+
+            newItem = new FileTreeNodeModel();
 
             Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(Array.Empty<FileTreeNodeModel>())
             {
@@ -82,7 +85,8 @@ namespace TreeDataGridDemo.ViewModels
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
                         }),
-                }
+                },
+                AddRow = newItem
             };
 
             Source.RowSelection!.SingleSelect = false;

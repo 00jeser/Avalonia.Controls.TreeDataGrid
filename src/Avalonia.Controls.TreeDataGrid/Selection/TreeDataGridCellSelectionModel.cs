@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Selection
 {
     public class TreeDataGridCellSelectionModel<TModel> : ITreeDataGridCellSelectionModel<TModel>,
         ITreeDataGridSelectionInteraction
-        where TModel : class, new()
+        where TModel : class
     {
         private static readonly Point s_InvalidPoint = new(double.NegativeInfinity, double.NegativeInfinity);
         private readonly ITreeDataGridColumnSelectionModel _selectedColumns;

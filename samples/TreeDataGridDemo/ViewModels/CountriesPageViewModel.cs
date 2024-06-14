@@ -33,7 +33,7 @@ namespace TreeDataGridDemo.ViewModels
                         TextAlignment = Avalonia.Media.TextAlignment.Right,
                         MaxWidth = new GridLength(150)
                     }),
-                }
+                },
             };
             Source.RowSelection!.SingleSelect = false;
         }

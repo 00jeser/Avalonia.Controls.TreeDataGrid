@@ -57,13 +57,13 @@
                               Grid.Row="2"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Disabled"
-                              IsVisible="{TemplateBinding IsUserCanAddRows}"
-                              BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+                              BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
+                              IsVisible="{Binding HasNewItem}">
                   <Border x:Name="AddRowPresenterBorder">
                     <TreeDataGridAddRowPresentor Name="PART_AddRowPresenter"
                                              Columns="{TemplateBinding Columns}"
                                              ElementFactory="{TemplateBinding ElementFactory}"
-                                             Items="{TemplateBinding AddRow}"/>
+                                             Items="{TemplateBinding AddRowItems}"/>
                   </Border>
                 </ScrollViewer>
                 <ScrollViewer Name="PART_ScrollViewer"
